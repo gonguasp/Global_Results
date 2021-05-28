@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Ranked Tool</title>
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	</head>
+
+	<body>
+	    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+	    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+  		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  		
+  		<div class="container card" style="margin-top: 5%; margin-bottom: 5%; padding: 20px">
+  			<table id="ranked" class="display" style="width:95%"></table>
+        </div>
+
+		<script>
+			let data = {};
+            data.modality = "[[${modality}]]";
+            data.players = JSON.parse("[[${players}]]".replaceAll("&quot;", '"'));
+            data.players = data.players.sort((a,b) => (a[data.modality] > b[data.modality]) ? -1 : ((b[data.modality] > a[data.modality]) ? 1 : 0));
+            
+            console.log(data);
+			let columns = [
+			        { "data" : "Position", "title" : "Position" },
+			        { "data" : "playerName", "title" : "Player name" }
+			    ];
+			columns.push({ "data" : data.modality, "title" : "Points" });
+			columns = columns.concat([
+					{ "data" : data.modality + "Played", "title" : "Played" },
+			        { "data" : data.modality + "Won", "title" : "Won" },
+			        { "data" : "Efficency", "title" : "Efficency" }
+			    ]);
+
+			let players = [];
+			let position = 1;
+
+			for(let player of data.players) {
+				player.Efficency = parseInt(player[data.modality + "Won"] / player[data.modality + "Played"] * 100) + "%";
+				player.Position = position;
+				postion = position++;
+				players.push(player);
+			}
+
+			var json = {
+			    "columns": columns,
+			    "data": players
+			};
+
+			$(document).ready(function() {
+			    $('#ranked').DataTable( {
+			        data : json.data,
+	     			columns : json.columns,
+	     			"pageLength": 100
+			    } );
+			} );
+
+			function getParameterByName(name) {
+			    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+			    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+			    results = regex.exec(location.search);
+			    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+			}
+
+		</script>
+	</body>
+</html>
